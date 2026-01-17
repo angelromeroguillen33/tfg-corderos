@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFG Cebo Corderos - Gestión de Datos</title>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="header-image">
+            <img src="img/header_corderos.png" alt="Corderos comiendo heno">
+        </div>
+        <div class="header-content">
+            <h1>TFG Cebo de Corderos</h1>
+            <p class="subtitle">Sistema de Gestión de Datos Experimentales</p>
+            <p class="info">Periodo: 23/12/2025 – 04/02/2026 | 12 corderos Merina</p>
+            <span id="sync-status" class="sync-status sync-offline">🔴 Offline (local)</span>
+        </div>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab-btn active" data-tab="animales">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M8 20c0-2.2 1.8-4 4-4s4 1.8 4 4" />
+                <path d="M6 8c-1.5 0-3 1-3 3" />
+                <path d="M18 8c1.5 0 3 1 3 3" />
+            </svg>
+            <span>Animales</span>
+        </button>
+        <button class="tab-btn" data-tab="calendario">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <path d="M3 10h18" />
+                <path d="M8 2v4" />
+                <path d="M16 2v4" />
+            </svg>
+            <span>Calendario</span>
+        </button>
+        <button class="tab-btn" data-tab="pesajes">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 3v2" />
+                <circle cx="12" cy="8" r="3" />
+                <path d="M5 21l3-10h8l3 10" />
+                <path d="M5 21h14" />
+            </svg>
+            <span>Pesajes</span>
+        </button>
+        <button class="tab-btn" data-tab="consumo">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 2c-1 4-4 6-4 10a4 4 0 008 0c0-4-3-6-4-10z" />
+                <path d="M12 22v-6" />
+                <path d="M9 18l3-2 3 2" />
+            </svg>
+            <span>Consumo</span>
+        </button>
+        <button class="tab-btn" data-tab="incidencias">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="4" y="3" width="16" height="18" rx="2" />
+                <path d="M8 7h8" />
+                <path d="M8 11h8" />
+                <path d="M8 15h4" />
+            </svg>
+            <span>Incidencias</span>
+        </button>
+        <button class="tab-btn" data-tab="resultados">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M4 20h16" />
+                <path d="M4 20V10" />
+                <path d="M8 20V14" />
+                <path d="M12 20V8" />
+                <path d="M16 20V12" />
+                <path d="M20 20V6" />
+            </svg>
+            <span>Resultados</span>
+        </button>
+        <button class="tab-btn" data-tab="exportar">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 3v12" />
+                <path d="M8 11l4 4 4-4" />
+                <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+            </svg>
+            <span>Exportar</span>
+        </button>
+    </nav>
+
+    <main>
+        <!-- SECCIÓN: ANIMALES -->
+        <section id="animales" class="tab-content active">
+            <h2>Registro de Animales</h2>
+            <form id="form-animal">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="crotal">Nº Crotal *</label>
+                        <input type="text" id="crotal" required placeholder="Ej: 001">
+                    </div>
+                    <div class="form-group">
+                        <label for="grupo">Grupo Experimental *</label>
+                        <select id="grupo" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="A">Grupo A (Ad libitum + Paja)</option>
+                            <option value="B">Grupo B (85% + Heno)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="peso-inicial">Peso Inicial (kg) *</label>
+                        <input type="number" id="peso-inicial" step="0.1" min="0" required placeholder="Ej: 18.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha-inicio">Fecha de Inicio *</label>
+                        <input type="date" id="fecha-inicio" required value="2025-12-23">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="observaciones-animal">Observaciones</label>
+                    <textarea id="observaciones-animal" rows="2" placeholder="Notas adicionales..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary">➕ Registrar Animal</button>
+            </form>
+
+            <h3>Animales Registrados</h3>
+            <table id="tabla-animales">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="crotal">Crotal</th>
+                        <th class="sortable" data-sort="grupo">Grupo</th>
+                        <th class="sortable" data-sort="pesoInicial">Peso Inicial (kg)</th>
+                        <th class="sortable" data-sort="fechaInicio">Fecha Inicio</th>
+                        <th class="sortable" data-sort="activo">Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <!-- SECCIÓN: CALENDARIO -->
+        <section id="calendario" class="tab-content">
+            <h2>📅 Calendario del Estudio</h2>
+            <p class="calendario-info">Periodo: 23/12/2025 – 04/02/2026 | Clic en un día para registrar datos</p>
+
+            <div class="calendario-nav">
+                <button id="btn-mes-anterior" class="btn-secondary btn-small">◀ Anterior</button>
+                <span id="calendario-titulo-mes">Diciembre 2025</span>
+                <button id="btn-mes-siguiente" class="btn-secondary btn-small">Siguiente ▶</button>
+            </div>
+
+            <div class="calendario-leyenda">
+                <span class="leyenda-item"><span class="dot dot-pesaje"></span> Pesaje</span>
+                <span class="leyenda-item"><span class="dot dot-consumo-a"></span> Consumo A</span>
+                <span class="leyenda-item"><span class="dot dot-consumo-b"></span> Consumo B</span>
+                <span class="leyenda-item"><span class="dot dot-sintomatologia"></span> Síntomas</span>
+                <span class="leyenda-item"><span class="dot dot-tratamiento"></span> Tratamiento</span>
+                <span class="leyenda-item"><span class="dot dot-retirada"></span> Retirada</span>
+            </div>
+
+            <div id="calendario-grid" class="calendario-grid">
+                <!-- Generado por JavaScript -->
+            </div>
+        </section>
+
+        <!-- MODAL: REGISTRO RÁPIDO -->
+        <div id="modal-calendario" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="modal-close" id="modal-cerrar">&times;</span>
+                <h3 id="modal-titulo">Registrar - 01/01/2026</h3>
+
+                <div class="modal-tabs">
+                    <button class="modal-tab active" data-modal-tab="pesaje">⚖️ Pesaje</button>
+                    <button class="modal-tab" data-modal-tab="consumo">🌾 Consumo</button>
+                </div>
+
+                <!-- Tab Pesaje -->
+                <div id="modal-pesaje" class="modal-tab-content active">
+                    <div class="form-group">
+                        <label for="modal-pesaje-animal">Animal *</label>
+                        <select id="modal-pesaje-animal" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-pesaje-peso">Peso (kg) *</label>
+                        <input type="number" id="modal-pesaje-peso" step="0.1" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-pesaje-notas">Notas</label>
+                        <input type="text" id="modal-pesaje-notas" placeholder="Opcional">
+                    </div>
+                    <button id="btn-guardar-pesaje-modal" class="btn-primary">Guardar Pesaje</button>
+                </div>
+
+                <!-- Tab Consumo -->
+                <div id="modal-consumo" class="modal-tab-content" style="display: none;">
+                    <div class="form-group">
+                        <label for="modal-consumo-grupo">Grupo *</label>
+                        <select id="modal-consumo-grupo" required>
+                            <option value="A">Grupo A</option>
+                            <option value="B">Grupo B</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modal-pienso-ofrecido">Pienso Ofrecido (kg)</label>
+                            <input type="number" id="modal-pienso-ofrecido" step="0.01" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="modal-pienso-rechazado">Rechazado (kg)</label>
+                            <input type="number" id="modal-pienso-rechazado" step="0.01" min="0" value="0">
+                        </div>
+                    </div>
+                    <button id="btn-guardar-consumo-modal" class="btn-primary">Guardar Consumo</button>
+                </div>
+
+                <!-- Datos del día -->
+                <div id="modal-datos-dia" class="modal-datos-dia">
+                    <h4>📊 Datos de este día:</h4>
+                    <div id="modal-resumen-dia">Sin registros</div>
+                </div>
+            </div>
+        </div>
+        <section id="pesajes" class="tab-content">
+            <h2>Registro de Pesajes Semanales</h2>
+            <form id="form-pesaje">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pesaje-crotal">Animal (Crotal) *</label>
+                        <select id="pesaje-crotal" required>
+                            <option value="">Seleccionar animal...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pesaje-fecha">Fecha del Pesaje *</label>
+                        <input type="date" id="pesaje-fecha" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pesaje-peso">Peso (kg) *</label>
+                        <input type="number" id="pesaje-peso" step="0.1" min="0" required placeholder="Ej: 22.3">
+                    </div>
+                    <div class="form-group">
+                        <label for="pesaje-semana">Semana de Cebo</label>
+                        <input type="number" id="pesaje-semana" min="1" max="7" placeholder="1-7">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="pesaje-notas">Notas</label>
+                    <textarea id="pesaje-notas" rows="2" placeholder="Observaciones del pesaje..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary">➕ Registrar Pesaje</button>
+            </form>
+
+            <h3>Historial de Pesajes</h3>
+            <div class="filter-row">
+                <div class="filter-item">
+                    <label>Animal:</label>
+                    <select id="filtro-pesaje-animal">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Fecha:</label>
+                    <input type="date" id="filtro-pesaje-fecha">
+                </div>
+                <div class="filter-item">
+                    <label>Semana:</label>
+                    <input type="number" id="filtro-pesaje-semana" placeholder="Nº" min="1" max="8"
+                        style="width: 70px;">
+                </div>
+                <button id="btn-limpiar-filtros-pesaje" class="btn-secondary btn-small"
+                    style="height: 38px;">Limpiar</button>
+            </div>
+            <table id="tabla-pesajes">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="fecha">Fecha</th>
+                        <th class="sortable" data-sort="crotal">Crotal</th>
+                        <th class="sortable" data-sort="grupo">Grupo</th>
+                        <th class="sortable" data-sort="peso">Peso (kg)</th>
+                        <th class="sortable" data-sort="semana">Semana</th>
+                        <th class="sortable" data-sort="gmd">GMD (g/día)</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <!-- Gráfica de Pesajes (Abajo) -->
+            <div class="chart-container-wrapper" style="margin-top: 2rem;">
+                <h3>📈 Evolución de Peso (Comparativa)</h3>
+                <div class="chart-controls">
+                    <select id="grafico-pesaje-metrica">
+                        <option value="pesoMedio">Peso Medio (kg)</option>
+                        <option value="gmd">GMD Media (g/día)</option>
+                    </select>
+                    <button class="btn-secondary btn-small"
+                        onclick="descargarGrafico('grafico-pesaje', 'Evolucion_Peso.png')" style="margin-left: auto;">💾
+                        Descargar PNG</button>
+                </div>
+                <div class="chart-canvas-container">
+                    <canvas id="grafico-pesaje"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: CONSUMO -->
+        <section id="consumo" class="tab-content">
+            <h2>Registro de Consumo Diario por Grupo</h2>
+            <form id="form-consumo">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="consumo-grupo">Grupo *</label>
+                        <select id="consumo-grupo" required>
+                            <option value="">Seleccionar grupo...</option>
+                            <option value="A">Grupo A</option>
+                            <option value="B">Grupo B</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="consumo-fecha">Fecha *</label>
+                        <input type="date" id="consumo-fecha" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="consumo-pienso-ofrecido">Pienso Ofrecido (kg) *</label>
+                        <input type="number" id="consumo-pienso-ofrecido" step="0.01" min="0" required
+                            placeholder="Ej: 5.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="consumo-pienso-rechazado">Pienso Rechazado (kg)</label>
+                        <input type="number" id="consumo-pienso-rechazado" step="0.01" min="0" value="0"
+                            placeholder="Ej: 0.3">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="consumo-forraje-ofrecido">Forraje Ofrecido (kg)</label>
+                        <input type="number" id="consumo-forraje-ofrecido" step="0.01" min="0" placeholder="Paja/Heno">
+                    </div>
+                    <div class="form-group">
+                        <label for="consumo-forraje-rechazado">Forraje Rechazado (kg)</label>
+                        <input type="number" id="consumo-forraje-rechazado" step="0.01" min="0" value="0">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">➕ Registrar Consumo</button>
+            </form>
+
+            <h3>Historial de Consumo</h3>
+            <div class="filter-row">
+                <div class="filter-item">
+                    <label>Grupo:</label>
+                    <select id="filtro-consumo-grupo">
+                        <option value="">Todos</option>
+                        <option value="A">Grupo A</option>
+                        <option value="B">Grupo B</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Fecha:</label>
+                    <input type="date" id="filtro-consumo-fecha">
+                </div>
+                <button id="btn-limpiar-filtros-consumo" class="btn-secondary btn-small"
+                    style="height: 38px;">Limpiar</button>
+            </div>
+            <table id="tabla-consumo">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="fecha">Fecha</th>
+                        <th class="sortable" data-sort="grupo">Grupo</th>
+                        <th class="sortable" data-sort="piensoOfrecido">Pienso Ofrecido</th>
+                        <th class="sortable" data-sort="piensoRechazado">Pienso Rechazado</th>
+                        <th class="sortable" data-sort="consumoNeto">Consumo Neto Pienso</th>
+                        <th class="sortable" data-sort="forrajeOfrecido">Forraje Ofrecido</th>
+                        <th class="sortable" data-sort="forrajeRechazado">Forraje Rechazado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <!-- Gráfica de Consumo (Abajo) -->
+            <div class="chart-container-wrapper" style="margin-top: 2rem;">
+                <h3>📊 Consumo y Eficiencia</h3>
+                <div class="chart-controls">
+                    <select id="grafico-consumo-metrica">
+                        <option value="ingesta">Ingesta Media Diaria (kg/animal)</option>
+                        <option value="ic">Índice Conversión Estimado</option>
+                    </select>
+                    <button class="btn-secondary btn-small"
+                        onclick="descargarGrafico('grafico-consumo', 'Consumo_Grupos.png')"
+                        style="margin-left: auto;">💾 Descargar PNG</button>
+                </div>
+                <div class="chart-canvas-container">
+                    <canvas id="grafico-consumo"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: INCIDENCIAS -->
+        <section id="incidencias" class="tab-content">
+            <h2>Registro de Incidencias</h2>
+            <form id="form-incidencia">
+                <!-- Selector de ámbito -->
+                <div class="form-group">
+                    <label>Ámbito de la incidencia *</label>
+                    <div class="ambito-selector">
+                        <label class="radio-label">
+                            <input type="radio" name="incidencia-ambito" value="individual" checked>
+                            <span>🐑 Animal individual</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="incidencia-ambito" value="grupoA">
+                            <span>📦 Grupo A (Cebo)</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="incidencia-ambito" value="grupoB">
+                            <span>📦 Grupo B (Suplementado)</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="incidencia-ambito" value="ambos">
+                            <span>📦📦 Ambos grupos</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <!-- Selector de Animal (solo visible si ámbito es individual) -->
+                    <div class="form-group" id="grupo-crotal">
+                        <label for="incidencia-crotal">Animal (Crotal) *</label>
+                        <select id="incidencia-crotal">
+                            <option value="">Seleccionar animal...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="incidencia-fecha">Fecha *</label>
+                        <input type="date" id="incidencia-fecha" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="incidencia-tipo">Tipo de Incidencia *</label>
+                        <select id="incidencia-tipo" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="sintomatologia">Sintomatología (sin tratamiento)</option>
+                            <option value="tratamiento">Tratamiento veterinario</option>
+                            <option value="retirada">Retirada del estudio</option>
+                            <option value="baja">Baja (muerte)</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Descripción breve (condicional) -->
+                <div class="form-row" id="div-descripcion-incidencia" style="display: none;">
+                    <div class="form-group" style="width: 100%;">
+                        <label for="incidencia-descripcion">Descripción / Observaciones *</label>
+                        <textarea id="incidencia-descripcion" rows="3"
+                            placeholder="Describe brevemente los síntomas o motivo..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Campos Dinámicos para Medicación -->
+                <div id="campos-medicamento" class="campos-medicamento" style="display: none;">
+                    <h3>💊 Detalles del Tratamiento</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="med-nombre">Medicamento *</label>
+                            <input type="text" id="med-nombre" placeholder="Ej: Amoxicilina">
+                        </div>
+                        <div class="form-group">
+                            <label for="med-dosis">Dosis</label>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="number" id="med-dosis" step="0.01" placeholder="Cant" style="flex: 1;">
+                                <select id="med-unidad" style="width: 80px;">
+                                    <option value="ml">ml</option>
+                                    <option value="mg">mg</option>
+                                    <option value="gr">gr</option>
+                                    <option value="ui">UI</option>
+                                    <option value="cc">cc</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="med-via">Vía de Administración</label>
+                            <select id="med-via">
+                                <option value="IM">Intramuscular (IM)</option>
+                                <option value="SC">Subcutánea (SC)</option>
+                                <option value="IV">Intravenosa (IV)</option>
+                                <option value="oral">Oral</option>
+                                <option value="topica">Tópica</option>
+                                <option value="agua">En agua</option>
+                                <option value="pienso">En pienso</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="med-presentacion">Presentación</label>
+                            <select id="med-presentacion">
+                                <option value="inyectable">Inyectable</option>
+                                <option value="comprimido">Comprimido/Bolo</option>
+                                <option value="polvo">Polvo soluble</option>
+                                <option value="suspension">Suspensión</option>
+                                <option value="pomada">Pomada</option>
+                                <option value="spray">Spray</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="med-duracion">Duración (días)</label>
+                            <input type="number" id="med-duracion" value="1" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="med-notas">Notas Tratamiento</label>
+                            <input type="text" id="med-notas" placeholder="Periodicidad, lote...">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">➕ Registrar Incidencia</button>
+            </form>
+
+            <h3>Historial de Incidencias</h3>
+            <div class="filter-row">
+                <label>Filtrar por tipo:</label>
+                <select id="filtro-incidencia-tipo">
+                    <option value="">Todos</option>
+                    <option value="sintomatologia">🩺 Sintomatología</option>
+                    <option value="tratamiento">💉 Tratamiento</option>
+                    <option value="retirada">🚫 Retirada</option>
+                </select>
+            </div>
+            <table id="tabla-incidencias">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="fecha">Fecha</th>
+                        <th class="sortable" data-sort="crotal">Animal/Grupo</th>
+                        <th class="sortable" data-sort="tipo">Tipo</th>
+                        <th>Descripción</th>
+                        <th>Medicamento</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <!-- SECCIÓN: RESULTADOS -->
+        <section id="resultados" class="tab-content">
+            <h2>Resultados y Cálculos</h2>
+
+            <div class="results-grid">
+                <div class="result-card">
+                    <h3>📊 Resumen General</h3>
+                    <div id="resumen-general">
+                        <p>Cargando datos...</p>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>🐑 Grupo A (Ad libitum + Paja)</h3>
+                    <div id="resumen-grupo-a">
+                        <p>Sin datos</p>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>🐑 Grupo B (85% + Heno)</h3>
+                    <div id="resumen-grupo-b">
+                        <p>Sin datos</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Evolución de Peso por Animal</h3>
+            <table id="tabla-evolucion">
+                <thead>
+                    <tr>
+                        <th>Crotal</th>
+                        <th>Grupo</th>
+                        <th>Peso Inicial</th>
+                        <th>Peso Actual</th>
+                        <th>Ganancia Total</th>
+                        <th>GMD (g/día)</th>
+                        <th>Días en Cebo</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <h3>Índice de Conversión por Grupo</h3>
+            <table id="tabla-conversion">
+                <thead>
+                    <tr>
+                        <th>Grupo</th>
+                        <th>Consumo Total Pienso (kg)</th>
+                        <th>Ganancia Total Grupo (kg)</th>
+                        <th>Índice Conversión (kg pienso/kg ganancia)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <button id="btn-actualizar-resultados" class="btn-secondary">🔄 Actualizar Resultados</button>
+        </section>
+
+        <!-- SECCIÓN: EXPORTAR -->
+        <section id="exportar" class="tab-content">
+            <h2>Exportar Datos</h2>
+
+            <div class="export-options">
+                <div class="export-card" style="border: 2px solid #FF9800;">
+                    <h3>🔥 Sincronización Firebase</h3>
+                    <p>Sincroniza tus datos en tiempo real entre dispositivos (PC y móvil).</p>
+                    <p><small id="firebase-status-text">Estado: Verificando configuración...</small></p>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button onclick="syncLocalToFirebase()" class="btn-primary">📤 Subir a la nube</button>
+                        <button onclick="syncFirebaseToLocal()" class="btn-secondary">📥 Descargar de la nube</button>
+                    </div>
+                </div>
+
+                <div class="export-card">
+                    <h3>📥 Exportar a Excel</h3>
+                    <p>Genera un archivo Excel (.xlsx) con todos los datos del experimento.</p>
+                    <button id="btn-exportar-excel" class="btn-primary">Exportar Todo a Excel</button>
+                </div>
+
+                <div class="export-card">
+                    <h3>💾 Copia de Seguridad Manual (JSON)</h3>
+                    <p><strong>Nota:</strong> Los datos se guardan automáticamente en este navegador. Usa esto solo para
+                        transferir datos a otro PC.</p>
+                    <button id="btn-backup-json" class="btn-secondary">Descargar Archivo .json</button>
+                </div>
+
+                <div class="export-card">
+                    <h3>📂 Restaurar Datos</h3>
+                    <p>Restaura datos desde un archivo de backup JSON.</p>
+                    <input type="file" id="input-restore" accept=".json">
+                    <button id="btn-restore" class="btn-secondary">Restaurar desde Archivo</button>
+                </div>
+
+                <div class="export-card warning">
+                    <h3>⚠️ Limpiar Datos</h3>
+                    <p>Elimina TODOS los datos almacenados. Esta acción no se puede deshacer.</p>
+                    <button id="btn-limpiar-datos" class="btn-danger">Eliminar Todos los Datos</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>TFG Veterinaria - Cebo de Corderos Merina | Datos almacenados localmente en el navegador</p>
+        <p id="estado-guardado">✅ Datos guardados localmente</p>
+    </footer>
+
+    <!-- SheetJS para exportación Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- Copia local de respaldo para modo offline -->
+    <script>
+        // Si SheetJS no carga (offline), se usa versión local
+        if (typeof XLSX === 'undefined') {
+            document.write('<script src="libs/xlsx.full.min.js"><\/script>');
+        }
+    </script>
+    <!-- Firebase Config y Sync -->
+    <script src="firebase-config.js"></script>
+    <script src="firebase-sync.js"></script>
+    <!-- App principal -->
+    <script src="app.js"></script>
+</body>
+
+</html>
