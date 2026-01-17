@@ -900,7 +900,7 @@ function renderizarTablaIncidencias() {
 
     // Aplicar ordenación: si no hay columna seleccionada, ordenar por fecha desc por defecto
     if (estadoOrdenacion['tabla-incidencias'].columna) {
-        incidencias = ordenarDatos(incidencias, 'tabla-incidencias', getValorIncidencia);
+        incidencias = ordenarDatos(incidencias, 'tabla-incidencias', (i, col) => getValorIncidencia(i, col, animales));
     } else {
         incidencias.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
     }
@@ -936,9 +936,8 @@ function renderizarTablaIncidencias() {
         return `
         <tr data-id="${inc.id}">
             <td>${formatearFecha(inc.fecha)}</td>
-            <td>
-                <strong>${inc.crotal}</strong> ${badgeGrupo}
-            </td>
+            <td><strong>${inc.crotal}</strong></td>
+            <td>${badgeGrupo}</td>
             <td>${tiposTexto[inc.tipo] || inc.tipo}</td>
             <td>${inc.descripcion}</td>
             <td>${infoMed}</td>
@@ -950,7 +949,7 @@ function renderizarTablaIncidencias() {
     }).join('');
 
     if (incidencias.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b;">No hay incidencias registradas con este filtro</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #64748b;">No hay incidencias registradas con este filtro</td></tr>';
     }
 }
 
@@ -2443,10 +2442,14 @@ function getValorConsumo(consumo, columna) {
     }
 }
 
-function getValorIncidencia(incidencia, columna) {
+function getValorIncidencia(incidencia, columna, animales) {
     switch (columna) {
         case 'fecha': return incidencia.fecha;
         case 'crotal': return incidencia.crotal;
+        case 'grupo':
+            if (!animales) return '';
+            const animal = animales.find(a => a.crotal === incidencia.crotal);
+            return animal ? animal.grupo : '';
         case 'tipo': return incidencia.tipo;
         default: return '';
     }
