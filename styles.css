@@ -1285,9 +1285,12 @@ th.sortable.desc::after {
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.5;
     }
@@ -1298,126 +1301,146 @@ th.sortable.desc::after {
    ======================================== */
 
 @media screen and (max-width: 768px) {
+
     /* Ajustes generales */
-    main { padding: 1rem; }
-    
+    main {
+        padding: 0.5rem;
+    }
+
     /* Header compacto */
-    header .header-image { max-height: 120px; }
-    header .header-image img { height: 120px; }
-    header h1 { font-size: 1.4rem; }
-    
-    /* Navegación Scrollable */
+    header .header-image {
+        max-height: 100px;
+    }
+
+    header .header-image img {
+        height: 100px;
+    }
+
+    header h1 {
+        font-size: 1.2rem;
+        margin: 0.5rem 0;
+    }
+
+    /* Navegación Scrollable Compacta */
     .tabs {
         flex-wrap: nowrap;
         overflow-x: auto;
         justify-content: flex-start;
-        padding-bottom: 0.5rem;
-        -webkit-overflow-scrolling: touch; /* Suavidad en iOS */
+        padding-bottom: 0.25rem;
+        -webkit-overflow-scrolling: touch;
+        gap: 0.25rem;
     }
-    
+
     .tab-btn {
-        flex: 0 0 auto; /* No encoger ni estirar */
-        padding: 0.6rem 1rem;
+        flex: 0 0 auto;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
     }
 
-    /* Transformar tablas en Tarjetas (Card View) */
-    table, thead, tbody, th, td, tr {
+    /* Optimización de TABLAS para 9:16 (Formato Tabla con Scroll) */
+
+    /* Contenedor con scroll horizontal */
+    section {
+        overflow-x: hidden;
+    }
+
+    /* Evitar scroll en toda la página */
+
+    /* Forzar que las tablas tengan scroll horizontal */
+    table {
+        display: table;
+        /* Restaurar tabla standard */
+        min-width: 100%;
+        /* Ocupar todo el ancho */
+        font-size: 0.75rem;
+        /* Fuente más pequeña */
+    }
+
+    /* Envolver tabla en un div scrollable si no lo tiene (Bootstrap style) */
+    /* Como no tenemos div wrapper, aplicamos al propio elemento tabla display block con overflow */
+    table {
         display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        /* Evitar saltos de línea para mantener columnas */
+        -webkit-overflow-scrolling: touch;
     }
 
-    /* Ocultar encabezados de tabla */
-    thead tr {
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-    }
-
-    /* Estilo de tarjeta para cada fila */
-    tr {
-        margin-bottom: 1rem;
-        border: 2px solid var(--color-borde);
-        border-radius: var(--radio);
-        background: rgba(255, 255, 255, 0.4);
-        box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
-        padding: 0.5rem;
-    }
-
-    /* Celdas como filas dentro de la tarjeta */
+    /* Ajustar celdas */
+    th,
     td {
+        padding: 0.4rem 0.3rem;
+        /* Padding reducido */
+        display: table-cell;
+        /* Restaurar celdas */
+        border: 1px solid var(--color-borde);
+        /* Bordes visibles */
+        text-align: center;
+    }
+
+    /* Restaurar encabezados ocultos */
+    thead tr {
+        position: static;
+        top: auto;
+        left: auto;
+    }
+
+    tr {
+        margin-bottom: 0;
         border: none;
-        border-bottom: 1px solid var(--color-borde);
-        position: relative;
-        padding-left: 45% !important; /* Espacio para labels */
-        text-align: right !important;
-        min-height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
+        display: table-row;
+        /* Restaurar filas */
+    }
+
+    /* Eliminar pseudo-elementos de tarjeta */
+    td::before {
+        content: none !important;
+    }
+
+    /* Ajustes específicos de celdas */
+    td {
+        padding-left: 0.3rem !important;
+        /* Quitar padding gigante de tarjeta */
+        text-align: center !important;
+        min-height: auto;
+        justify-content: center;
     }
 
     td:last-child {
-        border-bottom: none;
-        justify-content: center;
-        padding-left: 1rem !important;
-        margin-top: 0.5rem;
+        border-bottom: 1px solid var(--color-borde);
+        padding-left: 0.3rem !important;
+        margin-top: 0;
     }
 
-    /* Etiquetas (pseudo-elementos) */
-    td::before {
-        position: absolute;
-        top: 50%;
-        left: 1rem;
-        transform: translateY(-50%);
-        width: 40%;
-        padding-right: 10px;
-        white-space: nowrap;
-        font-weight: bold;
-        text-align: left;
-        color: var(--color-marron-oscuro);
-        font-family: var(--fuente-titulo);
+    /* Botones de acción más compactos */
+    .btn-editar,
+    .btn-eliminar {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.8rem;
     }
-
-    /* Etiquetas específicas por tabla (usando orden de columnas) */
-    
-    /* Tabla ANIMALES */
-    #tabla-animales td:nth-of-type(1):before { content: "Crotal"; }
-    #tabla-animales td:nth-of-type(2):before { content: "Grupo"; }
-    #tabla-animales td:nth-of-type(3):before { content: "P. Inicial"; }
-    #tabla-animales td:nth-of-type(4):before { content: "Inicio"; }
-    #tabla-animales td:nth-of-type(5):before { content: "Estado"; }
-    
-    /* Tabla PESAJES */
-    #tabla-pesajes td:nth-of-type(1):before { content: "Fecha"; }
-    #tabla-pesajes td:nth-of-type(2):before { content: "Crotal"; }
-    #tabla-pesajes td:nth-of-type(3):before { content: "Grupo"; }
-    #tabla-pesajes td:nth-of-type(4):before { content: "Peso"; }
-    #tabla-pesajes td:nth-of-type(5):before { content: "Semana"; }
-    #tabla-pesajes td:nth-of-type(6):before { content: "GMD"; }
-    
-    /* Tabla CONSUMO */
-    #tabla-consumo td:nth-of-type(1):before { content: "Fecha"; }
-    #tabla-consumo td:nth-of-type(2):before { content: "Grupo"; }
-    #tabla-consumo td:nth-of-type(3):before { content: "Pienso Ofrec."; }
-    #tabla-consumo td:nth-of-type(4):before { content: "Pienso Rech."; }
-    #tabla-consumo td:nth-of-type(5):before { content: "Consumo Neto"; }
-    #tabla-consumo td:nth-of-type(6):before { content: "Forraje Ofrec."; }
-    #tabla-consumo td:nth-of-type(7):before { content: "Forraje Rech."; }
-
-    /* Tabla INCIDENCIAS (Arreglo específico solicitado) */
-    #tabla-incidencias td:nth-of-type(1):before { content: "Fecha"; }
-    #tabla-incidencias td:nth-of-type(2):before { content: "Animal"; }
-    #tabla-incidencias td:nth-of-type(3):before { content: "Grupo"; }
-    #tabla-incidencias td:nth-of-type(4):before { content: "Tipo"; }
-    #tabla-incidencias td:nth-of-type(5):before { content: "Descripción"; }
-    #tabla-incidencias td:nth-of-type(6):before { content: "Medicamento"; }
 
     /* Ajustes generales de formulario en móvil */
     .form-row {
         grid-template-columns: 1fr;
+        /* Una columna en forms */
+        gap: 0.5rem;
     }
-    
+
     .filter-row {
         flex-direction: column;
         align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    input,
+    select,
+    textarea {
+        font-size: 0.9rem;
+        /* Inputs legibles */
+        padding: 0.4rem;
     }
 }
