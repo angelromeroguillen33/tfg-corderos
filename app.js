@@ -477,21 +477,21 @@ function inicializarFormPesajes() {
         renderizarTablaPesajes();
     });
 
-}
 
-// Filtros de pesajes
-document.getElementById('filtro-pesaje-animal').addEventListener('change', renderizarTablaPesajes);
-document.getElementById('filtro-pesaje-fecha').addEventListener('change', renderizarTablaPesajes);
-document.getElementById('filtro-pesaje-semana').addEventListener('input', renderizarTablaPesajes);
 
-// Botón borrar filtros
-document.getElementById('btn-limpiar-filtros-pesaje').addEventListener('click', (e) => {
-    e.preventDefault();
-    document.getElementById('filtro-pesaje-animal').value = '';
-    document.getElementById('filtro-pesaje-fecha').value = '';
-    document.getElementById('filtro-pesaje-semana').value = '';
-    renderizarTablaPesajes();
-});
+    // Filtros de pesajes
+    document.getElementById('filtro-pesaje-animal').addEventListener('change', renderizarTablaPesajes);
+    document.getElementById('filtro-pesaje-fecha').addEventListener('change', renderizarTablaPesajes);
+    document.getElementById('filtro-pesaje-semana').addEventListener('input', renderizarTablaPesajes);
+
+    // Botón borrar filtros
+    document.getElementById('btn-limpiar-filtros-pesaje').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('filtro-pesaje-animal').value = '';
+        document.getElementById('filtro-pesaje-fecha').value = '';
+        document.getElementById('filtro-pesaje-semana').value = '';
+        renderizarTablaPesajes();
+    });
 }
 
 function obtenerUltimoPeso(crotal, fechaActual) {
