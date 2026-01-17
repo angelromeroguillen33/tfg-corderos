@@ -414,6 +414,7 @@ function inicializarFormPesajes() {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 
+        const id = document.getElementById('pesaje-id').value;
         const crotal = document.getElementById('pesaje-crotal').value;
         const fecha = document.getElementById('pesaje-fecha').value;
         const peso = parseFloat(document.getElementById('pesaje-peso').value);
@@ -426,47 +427,71 @@ function inicializarFormPesajes() {
 
         // Validar pérdida de peso excesiva
         const ultimoPeso = obtenerUltimoPeso(crotal, fecha);
-        if (ultimoPeso && peso < ultimoPeso * 0.9) {
+        if (!id && ultimoPeso && peso < ultimoPeso * 0.9) { // Solo validar en creación
             if (!confirm(`⚠️ El peso registrado (${peso} kg) es ${((1 - peso / ultimoPeso) * 100).toFixed(1)}% menor que el último peso (${ultimoPeso.toFixed(1)} kg). ¿Confirmar este registro?`)) {
                 return;
             }
         }
 
-        const pesaje = {
-            id: generarId(),
-            crotal: crotal,
-            fecha: fecha,
-            peso: peso,
-            semana: document.getElementById('pesaje-semana').value || calcularSemana(crotal, fecha),
-            notas: document.getElementById('pesaje-notas').value.trim(),
-            fechaRegistro: new Date().toISOString()
-        };
+        let pesajes = cargarDatos('pesajes');
 
-        const pesajes = cargarDatos('pesajes');
-        pesajes.push(pesaje);
+        if (id) {
+            // EDICIÓN
+            const index = pesajes.findIndex(p => p.id === id);
+            if (index !== -1) {
+                pesajes[index] = {
+                    ...pesajes[index],
+                    crotal: crotal,
+                    fecha: fecha,
+                    peso: peso,
+                    semana: document.getElementById('pesaje-semana').value || calcularSemana(crotal, fecha),
+                    notas: document.getElementById('pesaje-notas').value.trim()
+                };
+                alert('✅ Pesaje actualizado correctamente.');
+            }
+        } else {
+            // CREACIÓN
+            const pesaje = {
+                id: generarId(),
+                crotal: crotal,
+                fecha: fecha,
+                peso: peso,
+                semana: document.getElementById('pesaje-semana').value || calcularSemana(crotal, fecha),
+                notas: document.getElementById('pesaje-notas').value.trim(),
+                fechaRegistro: new Date().toISOString()
+            };
+            pesajes.push(pesaje);
+            alert('✅ Pesaje registrado correctamente.');
+        }
+
         guardarDatos('pesajes', pesajes);
 
         form.reset();
+        document.getElementById('pesaje-id').value = '';
+        document.getElementById('btn-submit-pesaje').textContent = '➕ Registrar Pesaje';
+        document.getElementById('btn-submit-pesaje').classList.remove('btn-warning');
+        document.getElementById('btn-submit-pesaje').classList.add('btn-primary');
         document.getElementById('pesaje-fecha').valueAsDate = new Date();
+        document.getElementById('pesaje-semana').value = ''; // Limpiar semana explícita
 
         renderizarTablaPesajes();
-
-        alert('✅ Pesaje registrado correctamente.');
     });
 
-    // Filtros de pesajes
-    document.getElementById('filtro-pesaje-animal').addEventListener('change', renderizarTablaPesajes);
-    document.getElementById('filtro-pesaje-fecha').addEventListener('change', renderizarTablaPesajes);
-    document.getElementById('filtro-pesaje-semana').addEventListener('input', renderizarTablaPesajes);
+}
 
-    // Botón borrar filtros
-    document.getElementById('btn-limpiar-filtros-pesaje').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('filtro-pesaje-animal').value = '';
-        document.getElementById('filtro-pesaje-fecha').value = '';
-        document.getElementById('filtro-pesaje-semana').value = '';
-        renderizarTablaPesajes();
-    });
+// Filtros de pesajes
+document.getElementById('filtro-pesaje-animal').addEventListener('change', renderizarTablaPesajes);
+document.getElementById('filtro-pesaje-fecha').addEventListener('change', renderizarTablaPesajes);
+document.getElementById('filtro-pesaje-semana').addEventListener('input', renderizarTablaPesajes);
+
+// Botón borrar filtros
+document.getElementById('btn-limpiar-filtros-pesaje').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('filtro-pesaje-animal').value = '';
+    document.getElementById('filtro-pesaje-fecha').value = '';
+    document.getElementById('filtro-pesaje-semana').value = '';
+    renderizarTablaPesajes();
+});
 }
 
 function obtenerUltimoPeso(crotal, fechaActual) {
@@ -572,6 +597,7 @@ function renderizarTablaPesajes() {
                 <td>${semanaDisplay}</td>
                 <td>${gmd !== null ? gmd + ' g' : '-'}</td>
                 <td class="acciones">
+                    <button class="btn-editar" onclick="editarPesaje('${pesaje.id}')" title="Editar">✏️</button>
                     <button class="btn-eliminar" onclick="eliminarPesaje('${pesaje.id}')">🗑️</button>
                 </td>
             </tr>
@@ -584,6 +610,29 @@ function renderizarTablaPesajes() {
 
     // Actualizar gráfico con los datos filtrados
     actualizarGraficoPesaje(pesajes);
+}
+
+function editarPesaje(id) {
+    const pesajes = cargarDatos('pesajes');
+    const pesaje = pesajes.find(p => p.id === id);
+
+    if (!pesaje) return;
+
+    document.getElementById('pesaje-id').value = pesaje.id;
+    document.getElementById('pesaje-crotal').value = pesaje.crotal;
+    document.getElementById('pesaje-fecha').value = pesaje.fecha;
+    document.getElementById('pesaje-peso').value = pesaje.peso;
+    document.getElementById('pesaje-semana').value = pesaje.semana || '';
+    document.getElementById('pesaje-notas').value = pesaje.notas || '';
+
+    // Cambiar texto del botón
+    const btnSubmit = document.getElementById('btn-submit-pesaje');
+    btnSubmit.textContent = '💾 Actualizar Pesaje';
+    btnSubmit.classList.remove('btn-primary');
+    btnSubmit.classList.add('btn-warning');
+
+    // Scroll al formulario
+    document.getElementById('form-pesaje').scrollIntoView({ behavior: 'smooth' });
 }
 
 function eliminarPesaje(id) {
@@ -611,52 +660,74 @@ function inicializarFormConsumo() {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        const consumo = {
-            id: generarId(),
-            grupo: document.getElementById('consumo-grupo').value,
-            fecha: document.getElementById('consumo-fecha').value,
-            piensoOfrecido: parseFloat(document.getElementById('consumo-pienso-ofrecido').value),
-            piensoRechazado: parseFloat(document.getElementById('consumo-pienso-rechazado').value) || 0,
-            forrajeOfrecido: parseFloat(document.getElementById('consumo-forraje-ofrecido').value) || 0,
-            forrajeRechazado: parseFloat(document.getElementById('consumo-forraje-rechazado').value) || 0,
-            fechaRegistro: new Date().toISOString()
-        };
+        const id = document.getElementById('consumo-id').value;
+        const grupo = document.getElementById('consumo-grupo').value;
+        const fecha = document.getElementById('consumo-fecha').value;
+        const piensoOfrecido = parseFloat(document.getElementById('consumo-pienso-ofrecido').value);
+        const piensoRechazado = parseFloat(document.getElementById('consumo-pienso-rechazado').value) || 0;
+        const forrajeOfrecido = parseFloat(document.getElementById('consumo-forraje-ofrecido').value) || 0;
+        const forrajeRechazado = parseFloat(document.getElementById('consumo-forraje-rechazado').value) || 0;
 
-        // Validar que el rechazo no sea mayor que lo ofrecido
-        if (consumo.piensoRechazado > consumo.piensoOfrecido) {
+        // Validaciones
+        if (piensoRechazado > piensoOfrecido) {
             alert('⚠️ El pienso rechazado no puede ser mayor que el ofrecido.');
             return;
         }
 
-        if (consumo.forrajeRechazado > consumo.forrajeOfrecido) {
+        if (forrajeRechazado > forrajeOfrecido) {
             alert('⚠️ El forraje rechazado no puede ser mayor que el ofrecido.');
             return;
         }
 
-        const consumos = cargarDatos('consumo');
+        let consumos = cargarDatos('consumo');
 
-        // Verificar si ya existe un registro para ese grupo y fecha
-        const existente = consumos.find(c => c.grupo === consumo.grupo && c.fecha === consumo.fecha);
+        // Verificar duplicados (solo si cambiamos grupo/fecha o es nuevo registro)
+        // Ignorar el propio registro en caso de edición
+        const existente = consumos.find(c =>
+            c.grupo === grupo &&
+            c.fecha === fecha &&
+            c.id !== id
+        );
+
         if (existente) {
-            if (!confirm('Ya existe un registro para este grupo y fecha. ¿Desea reemplazarlo?')) {
+            if (!confirm('Ya existe OTRO registro para este grupo y fecha. ¿Desea continuar (esto podría causar duplicados lógicos)?')) {
                 return;
             }
-            // Eliminar el existente
-            const index = consumos.indexOf(existente);
-            consumos.splice(index, 1);
         }
 
-        consumos.push(consumo);
+        if (id) {
+            // EDICIÓN
+            const index = consumos.findIndex(c => c.id === id);
+            if (index !== -1) {
+                consumos[index] = {
+                    ...consumos[index],
+                    grupo, fecha, piensoOfrecido, piensoRechazado, forrajeOfrecido, forrajeRechazado
+                };
+                alert('✅ Consumo actualizado correctamente.');
+            }
+        } else {
+            // CREACIÓN
+            const consumo = {
+                id: generarId(),
+                grupo, fecha, piensoOfrecido, piensoRechazado, forrajeOfrecido, forrajeRechazado,
+                fechaRegistro: new Date().toISOString()
+            };
+            consumos.push(consumo);
+            alert('✅ Consumo registrado correctamente.');
+        }
+
         guardarDatos('consumo', consumos);
 
         form.reset();
+        document.getElementById('consumo-id').value = '';
+        document.getElementById('btn-submit-consumo').textContent = '➕ Registrar Consumo';
+        document.getElementById('btn-submit-consumo').classList.remove('btn-warning');
+        document.getElementById('btn-submit-consumo').classList.add('btn-primary');
         document.getElementById('consumo-fecha').valueAsDate = new Date();
         document.getElementById('consumo-pienso-rechazado').value = '0';
         document.getElementById('consumo-forraje-rechazado').value = '0';
 
         renderizarTablaConsumo();
-
-        alert('✅ Consumo registrado correctamente.');
     });
 
     // Filtros de consumo
@@ -705,6 +776,7 @@ function renderizarTablaConsumo() {
                 <td>${consumo.forrajeOfrecido.toFixed(2)} kg</td>
                 <td>${consumo.forrajeRechazado.toFixed(2)} kg</td>
                 <td class="acciones">
+                    <button class="btn-editar" onclick="editarConsumo('${consumo.id}')" title="Editar">✏️</button>
                     <button class="btn-eliminar" onclick="eliminarConsumo('${consumo.id}')">🗑️</button>
                 </td>
             </tr>
@@ -717,6 +789,30 @@ function renderizarTablaConsumo() {
 
     // Actualizar gráfico con los datos filtrados
     actualizarGraficoConsumo(consumos);
+}
+
+function editarConsumo(id) {
+    const consumos = cargarDatos('consumo');
+    const consumo = consumos.find(c => c.id === id);
+
+    if (!consumo) return;
+
+    document.getElementById('consumo-id').value = consumo.id;
+    document.getElementById('consumo-grupo').value = consumo.grupo;
+    document.getElementById('consumo-fecha').value = consumo.fecha;
+    document.getElementById('consumo-pienso-ofrecido').value = consumo.piensoOfrecido;
+    document.getElementById('consumo-pienso-rechazado').value = consumo.piensoRechazado;
+    document.getElementById('consumo-forraje-ofrecido').value = consumo.forrajeOfrecido || 0;
+    document.getElementById('consumo-forraje-rechazado').value = consumo.forrajeRechazado || 0;
+
+    // Cambiar texto del botón
+    const btnSubmit = document.getElementById('btn-submit-consumo');
+    btnSubmit.textContent = '💾 Actualizar Consumo';
+    btnSubmit.classList.remove('btn-primary');
+    btnSubmit.classList.add('btn-warning');
+
+    // Scroll al formulario
+    document.getElementById('form-consumo').scrollIntoView({ behavior: 'smooth' });
 }
 
 function eliminarConsumo(id) {

@@ -229,6 +229,7 @@
         <section id="pesajes" class="tab-content">
             <h2>Registro de Pesajes Semanales</h2>
             <form id="form-pesaje">
+                <input type="hidden" id="pesaje-id">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="pesaje-crotal">Animal (Crotal) *</label>
@@ -255,7 +256,7 @@
                     <label for="pesaje-notas">Notas</label>
                     <textarea id="pesaje-notas" rows="2" placeholder="Observaciones del pesaje..."></textarea>
                 </div>
-                <button type="submit" class="btn-primary">➕ Registrar Pesaje</button>
+                <button type="submit" id="btn-submit-pesaje" class="btn-primary">➕ Registrar Pesaje</button>
             </form>
 
             <h3>Historial de Pesajes</h3>
@@ -315,6 +316,7 @@
         <section id="consumo" class="tab-content">
             <h2>Registro de Consumo Diario por Grupo</h2>
             <form id="form-consumo">
+                <input type="hidden" id="consumo-id">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="consumo-grupo">Grupo *</label>
@@ -351,7 +353,7 @@
                         <input type="number" id="consumo-forraje-rechazado" step="0.01" min="0" value="0">
                     </div>
                 </div>
-                <button type="submit" class="btn-primary">➕ Registrar Consumo</button>
+                <button type="submit" id="btn-submit-consumo" class="btn-primary">➕ Registrar Consumo</button>
             </form>
 
             <h3>Historial de Consumo</h3>
