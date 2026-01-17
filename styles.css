@@ -1285,13 +1285,139 @@ th.sortable.desc::after {
 }
 
 @keyframes pulse {
-
-    0%,
-    100% {
+    0%, 100% {
         opacity: 1;
     }
-
     50% {
         opacity: 0.5;
+    }
+}
+
+/* ========================================
+   RESPONSIVE MÓVIL (Max 768px)
+   ======================================== */
+
+@media screen and (max-width: 768px) {
+    /* Ajustes generales */
+    main { padding: 1rem; }
+    
+    /* Header compacto */
+    header .header-image { max-height: 120px; }
+    header .header-image img { height: 120px; }
+    header h1 { font-size: 1.4rem; }
+    
+    /* Navegación Scrollable */
+    .tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 0.5rem;
+        -webkit-overflow-scrolling: touch; /* Suavidad en iOS */
+    }
+    
+    .tab-btn {
+        flex: 0 0 auto; /* No encoger ni estirar */
+        padding: 0.6rem 1rem;
+    }
+
+    /* Transformar tablas en Tarjetas (Card View) */
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    /* Ocultar encabezados de tabla */
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    /* Estilo de tarjeta para cada fila */
+    tr {
+        margin-bottom: 1rem;
+        border: 2px solid var(--color-borde);
+        border-radius: var(--radio);
+        background: rgba(255, 255, 255, 0.4);
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+        padding: 0.5rem;
+    }
+
+    /* Celdas como filas dentro de la tarjeta */
+    td {
+        border: none;
+        border-bottom: 1px solid var(--color-borde);
+        position: relative;
+        padding-left: 45% !important; /* Espacio para labels */
+        text-align: right !important;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    td:last-child {
+        border-bottom: none;
+        justify-content: center;
+        padding-left: 1rem !important;
+        margin-top: 0.5rem;
+    }
+
+    /* Etiquetas (pseudo-elementos) */
+    td::before {
+        position: absolute;
+        top: 50%;
+        left: 1rem;
+        transform: translateY(-50%);
+        width: 40%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: bold;
+        text-align: left;
+        color: var(--color-marron-oscuro);
+        font-family: var(--fuente-titulo);
+    }
+
+    /* Etiquetas específicas por tabla (usando orden de columnas) */
+    
+    /* Tabla ANIMALES */
+    #tabla-animales td:nth-of-type(1):before { content: "Crotal"; }
+    #tabla-animales td:nth-of-type(2):before { content: "Grupo"; }
+    #tabla-animales td:nth-of-type(3):before { content: "P. Inicial"; }
+    #tabla-animales td:nth-of-type(4):before { content: "Inicio"; }
+    #tabla-animales td:nth-of-type(5):before { content: "Estado"; }
+    
+    /* Tabla PESAJES */
+    #tabla-pesajes td:nth-of-type(1):before { content: "Fecha"; }
+    #tabla-pesajes td:nth-of-type(2):before { content: "Crotal"; }
+    #tabla-pesajes td:nth-of-type(3):before { content: "Grupo"; }
+    #tabla-pesajes td:nth-of-type(4):before { content: "Peso"; }
+    #tabla-pesajes td:nth-of-type(5):before { content: "Semana"; }
+    #tabla-pesajes td:nth-of-type(6):before { content: "GMD"; }
+    
+    /* Tabla CONSUMO */
+    #tabla-consumo td:nth-of-type(1):before { content: "Fecha"; }
+    #tabla-consumo td:nth-of-type(2):before { content: "Grupo"; }
+    #tabla-consumo td:nth-of-type(3):before { content: "Pienso Ofrec."; }
+    #tabla-consumo td:nth-of-type(4):before { content: "Pienso Rech."; }
+    #tabla-consumo td:nth-of-type(5):before { content: "Consumo Neto"; }
+    #tabla-consumo td:nth-of-type(6):before { content: "Forraje Ofrec."; }
+    #tabla-consumo td:nth-of-type(7):before { content: "Forraje Rech."; }
+
+    /* Tabla INCIDENCIAS (Arreglo específico solicitado) */
+    #tabla-incidencias td:nth-of-type(1):before { content: "Fecha"; }
+    #tabla-incidencias td:nth-of-type(2):before { content: "Animal"; }
+    #tabla-incidencias td:nth-of-type(3):before { content: "Grupo"; }
+    #tabla-incidencias td:nth-of-type(4):before { content: "Tipo"; }
+    #tabla-incidencias td:nth-of-type(5):before { content: "Descripción"; }
+    #tabla-incidencias td:nth-of-type(6):before { content: "Medicamento"; }
+
+    /* Ajustes generales de formulario en móvil */
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-row {
+        flex-direction: column;
+        align-items: stretch;
     }
 }
