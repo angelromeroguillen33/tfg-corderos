@@ -1444,3 +1444,80 @@ th.sortable.desc::after {
         padding: 0.4rem;
     }
 }
+
+/* ========================================
+   AUTENTICACIÓN - Login/Logout
+   ======================================== */
+
+.auth-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.user-info {
+    font-size: 0.85rem;
+    color: var(--color-paja);
+    font-style: italic;
+}
+
+.btn-auth {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radio);
+    font-family: var(--fuente-titulo);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid;
+}
+
+.btn-login {
+    background: linear-gradient(180deg, var(--color-trigo) 0%, #b89540 100%);
+    color: var(--color-marron-intenso);
+    border-color: #a8873a;
+}
+
+.btn-login:hover {
+    background: linear-gradient(180deg, #e0b84a 0%, var(--color-trigo) 100%);
+    transform: translateY(-1px);
+}
+
+.btn-logout {
+    background: transparent;
+    color: var(--color-pergamino);
+    border-color: var(--color-pergamino);
+}
+
+.btn-logout:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Modal de Login */
+.modal-login {
+    max-width: 380px;
+}
+
+.modal-login h3 {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.login-info {
+    text-align: center;
+    color: var(--color-marron);
+    font-size: 0.9rem;
+    margin-bottom: 1.25rem;
+}
+
+.login-note {
+    text-align: center;
+    color: var(--color-marron-claro);
+    margin-top: 1rem;
+}

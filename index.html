@@ -11,6 +11,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -23,7 +24,13 @@
             <h1>TFG Cebo de Corderos</h1>
             <p class="subtitle">Sistema de Gestión de Datos Experimentales</p>
             <p class="info">Periodo: 23/12/2025 – 04/02/2026 | 12 corderos Merina</p>
-            <span id="sync-status" class="sync-status sync-offline">🔴 Offline (local)</span>
+            <div class="auth-row">
+                <span id="sync-status" class="sync-status sync-offline">🔴 Offline (local)</span>
+                <span id="user-info" class="user-info"></span>
+                <button id="btn-login" class="btn-auth btn-login" onclick="showLoginModal()">🔐 Iniciar Sesión</button>
+                <button id="btn-logout" class="btn-auth btn-logout" onclick="logout()" style="display:none;">👋 Cerrar
+                    Sesión</button>
+            </div>
         </div>
     </header>
 
@@ -681,6 +688,29 @@
     <!-- Firebase Config y Sync -->
     <script src="firebase-config.js"></script>
     <script src="firebase-sync.js"></script>
+
+    <!-- Modal de Login -->
+    <div id="login-modal" class="modal" style="display: none;">
+        <div class="modal-content modal-login">
+            <span class="modal-close" onclick="closeLoginModal()">&times;</span>
+            <h3>🔐 Iniciar Sesión en Firebase</h3>
+            <p class="login-info">Inicia sesión para sincronizar datos entre dispositivos.</p>
+            <form id="form-login"
+                onsubmit="event.preventDefault(); loginWithEmail(document.getElementById('login-email').value, document.getElementById('login-password').value);">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required placeholder="tu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Contraseña</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Iniciar Sesión</button>
+            </form>
+            <p class="login-note"><small>Sin cuenta: crea una en Firebase Console > Authentication</small></p>
+        </div>
+    </div>
+
     <!-- App principal -->
     <script src="app.js"></script>
 </body>

@@ -1,11 +1,14 @@
 // ==========================================
 // FIREBASE SYNC - Sincronización en tiempo real
+// Con Autenticación de Usuario
 // ==========================================
 
 let firebaseApp = null;
 let firebaseDb = null;
+let firebaseAuth = null;
 let syncEnabled = false;
 let syncListeners = {};
+let currentUser = null;
 
 // Inicializar Firebase
 function initFirebase() {
@@ -19,22 +22,44 @@ function initFirebase() {
         // Inicializar Firebase
         firebaseApp = firebase.initializeApp(firebaseConfig);
         firebaseDb = firebase.database();
-        syncEnabled = true;
+        firebaseAuth = firebase.auth();
 
-        console.log('🔥 Firebase conectado correctamente');
-        updateSyncStatus('online');
+        console.log('🔥 Firebase inicializado. Esperando autenticación...');
+        updateSyncStatus('offline');
 
-        // Configurar listeners de sincronización en tiempo real
-        setupRealtimeListeners();
-
-        // Detectar cambios de conexión
-        firebase.database().ref('.info/connected').on('value', (snapshot) => {
-            if (snapshot.val() === true) {
-                console.log('🟢 Conexión con Firebase establecida');
+        // Escuchar cambios en el estado de autenticación
+        firebaseAuth.onAuthStateChanged((user) => {
+            if (user) {
+                // Usuario autenticado
+                currentUser = user;
+                syncEnabled = true;
+                console.log('✅ Usuario autenticado:', user.email);
                 updateSyncStatus('online');
+                updateLoginUI(true, user.email);
+
+                // Configurar listeners de sincronización
+                setupRealtimeListeners();
+
+                // Detectar cambios de conexión
+                firebase.database().ref('.info/connected').on('value', (snapshot) => {
+                    if (snapshot.val() === true) {
+                        console.log('🟢 Conexión con Firebase establecida');
+                        if (currentUser) updateSyncStatus('online');
+                    } else {
+                        console.log('🔴 Sin conexión con Firebase');
+                        updateSyncStatus('offline');
+                    }
+                });
             } else {
-                console.log('🔴 Sin conexión con Firebase');
+                // Usuario no autenticado
+                currentUser = null;
+                syncEnabled = false;
+                console.log('🔐 No autenticado. Modo offline.');
                 updateSyncStatus('offline');
+                updateLoginUI(false, null);
+
+                // Limpiar listeners
+                removeRealtimeListeners();
             }
         });
 
@@ -44,6 +69,99 @@ function initFirebase() {
         updateSyncStatus('error');
         return false;
     }
+}
+
+// ==========================================
+// AUTENTICACIÓN
+// ==========================================
+
+// Iniciar sesión con email y contraseña
+async function loginWithEmail(email, password) {
+    if (!firebaseAuth) {
+        alert('❌ Firebase no está inicializado.');
+        return false;
+    }
+
+    try {
+        updateSyncStatus('syncing');
+        const userCredential = await firebaseAuth.signInWithEmailAndPassword(email, password);
+        console.log('✅ Login exitoso:', userCredential.user.email);
+        closeLoginModal();
+        return true;
+    } catch (error) {
+        console.error('❌ Error de login:', error);
+        let mensaje = 'Error al iniciar sesión.';
+        switch (error.code) {
+            case 'auth/user-not-found':
+                mensaje = 'Usuario no encontrado. Verifica tu email.';
+                break;
+            case 'auth/wrong-password':
+                mensaje = 'Contraseña incorrecta.';
+                break;
+            case 'auth/invalid-email':
+                mensaje = 'Email no válido.';
+                break;
+            case 'auth/too-many-requests':
+                mensaje = 'Demasiados intentos. Espera un momento.';
+                break;
+        }
+        alert('❌ ' + mensaje);
+        updateSyncStatus('error');
+        return false;
+    }
+}
+
+// Cerrar sesión
+async function logout() {
+    if (!firebaseAuth) return;
+
+    try {
+        await firebaseAuth.signOut();
+        console.log('👋 Sesión cerrada');
+    } catch (error) {
+        console.error('Error al cerrar sesión:', error);
+    }
+}
+
+// Mostrar modal de login
+function showLoginModal() {
+    const modal = document.getElementById('login-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.getElementById('login-email').focus();
+    }
+}
+
+// Cerrar modal de login
+function closeLoginModal() {
+    const modal = document.getElementById('login-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.getElementById('login-email').value = '';
+        document.getElementById('login-password').value = '';
+    }
+}
+
+// Actualizar UI según estado de login
+function updateLoginUI(isLoggedIn, email) {
+    const loginBtn = document.getElementById('btn-login');
+    const logoutBtn = document.getElementById('btn-logout');
+    const userInfo = document.getElementById('user-info');
+
+    if (loginBtn) loginBtn.style.display = isLoggedIn ? 'none' : 'inline-flex';
+    if (logoutBtn) logoutBtn.style.display = isLoggedIn ? 'inline-flex' : 'none';
+    if (userInfo) userInfo.textContent = isLoggedIn ? email : '';
+}
+
+// Limpiar listeners de Firebase
+function removeRealtimeListeners() {
+    const collections = ['animales', 'pesajes', 'consumo', 'incidencias'];
+    collections.forEach(collection => {
+        if (syncListeners[collection] && firebaseDb) {
+            firebaseDb.ref(collection).off('value', syncListeners[collection]);
+            delete syncListeners[collection];
+        }
+    });
 }
 
 // Actualizar indicador visual de sincronización
