@@ -214,9 +214,25 @@ function inicializarTabs() {
             const tabId = tab.getAttribute('data-tab');
             document.getElementById(tabId).classList.add('active');
 
-            // Actualizar resultados si es la pestaña de resultados
+            // Actualizar vistas según la pestaña seleccionada
             if (tabId === 'resultados') {
                 actualizarResultados();
+            } else if (tabId === 'pesajes') {
+                // Usar setTimeout para esperar a que el DOM se actualice y el canvas sea visible
+                setTimeout(() => {
+                    if (typeof chartPesaje !== 'undefined' && chartPesaje) {
+                        chartPesaje.resize(); // Forzar redimensionado
+                        actualizarGraficoPesaje(); // Actualizar datos
+                    }
+                }, 50);
+            } else if (tabId === 'consumo') {
+                // Usar setTimeout para esperar a que el DOM se actualice y el canvas sea visible
+                setTimeout(() => {
+                    if (typeof chartConsumo !== 'undefined' && chartConsumo) {
+                        chartConsumo.resize(); // Forzar redimensionado
+                        actualizarGraficoConsumo(); // Actualizar datos
+                    }
+                }, 50);
             }
         });
     });
@@ -1238,21 +1254,26 @@ function actualizarTablaConversion() {
     const grupos = ['A', 'B'];
 
     tbody.innerHTML = grupos.map(grupo => {
-        const animalesGrupo = animales.filter(a => a.grupo === grupo && a.activo);
+        // Incluir TODOS los animales del grupo (activos e inactivos)
+        // para que su ganancia cuente frente al consumo que ya realizaron
+        const animalesGrupo = animales.filter(a => a.grupo === grupo);
         const consumosGrupo = consumos.filter(c => c.grupo === grupo);
 
-        // Consumo total neto
+        // Consumo total neto (pienso del grupo)
         const consumoTotal = consumosGrupo.reduce((acc, c) => acc + (c.piensoOfrecido - c.piensoRechazado), 0);
 
-        // Ganancia total del grupo
+        // Ganancia total del grupo (activos + inactivos)
         let gananciaTotal = 0;
+
         animalesGrupo.forEach(animal => {
             const pesajesAnimal = pesajes
                 .filter(p => p.crotal === animal.crotal)
                 .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
-            const pesoActual = pesajesAnimal.length > 0 ? pesajesAnimal[0].peso : animal.pesoInicial;
-            gananciaTotal += pesoActual - animal.pesoInicial;
+            // Si tiene pesajes, usar el último registrado (sea final o de baja)
+            // Si no tiene, usar peso inicial (ganancia 0)
+            const pesoFinal = pesajesAnimal.length > 0 ? pesajesAnimal[0].peso : animal.pesoInicial;
+            gananciaTotal += pesoFinal - animal.pesoInicial;
         });
 
         // Índice de conversión
@@ -2175,31 +2196,42 @@ function actualizarGraficoPesaje(datosFiltrados = null) {
         const pesajesFecha = pesajes.filter(p => p.fecha === fecha);
 
         let sumaA = 0, countA = 0, sumaB = 0, countB = 0;
+        let sumaGmdA = 0, countGmdA = 0, sumaGmdB = 0, countGmdB = 0;
 
         pesajesFecha.forEach(p => {
             const animal = animales.find(a => a.crotal === p.crotal);
             if (!animal) return;
 
-            if (animal.grupo === 'A') {
-                sumaA += p.peso;
-                countA++;
-            } else if (animal.grupo === 'B') {
-                sumaB += p.peso;
-                countB++;
+            if (metrica === 'pesoMedio') {
+                if (animal.grupo === 'A') {
+                    sumaA += p.peso;
+                    countA++;
+                } else if (animal.grupo === 'B') {
+                    sumaB += p.peso;
+                    countB++;
+                }
+            } else if (metrica === 'gmd') {
+                const gmd = calcularGMD(p.crotal, p.fecha, p.peso);
+                if (gmd !== null) {
+                    if (animal.grupo === 'A') {
+                        sumaGmdA += gmd;
+                        countGmdA++;
+                    } else if (animal.grupo === 'B') {
+                        sumaGmdB += gmd;
+                        countGmdB++;
+                    }
+                }
             }
         });
 
         if (metrica === 'pesoMedio') {
             datosA.push(countA > 0 ? (sumaA / countA) : null);
             datosB.push(countB > 0 ? (sumaB / countB) : null);
+        } else if (metrica === 'gmd') {
+            datosA.push(countGmdA > 0 ? (sumaGmdA / countGmdA) : null);
+            datosB.push(countGmdB > 0 ? (sumaGmdB / countGmdB) : null);
         }
     });
-
-    // Placeholder para GMD si se selecciona
-    if (metrica === 'gmd') {
-        datosA.length = 0; // Limpiar para MVP
-        datosB.length = 0;
-    }
 
     chartPesaje.data.labels = fechas.map(f => formatearFecha(f));
     chartPesaje.data.datasets = [
