@@ -310,6 +310,8 @@
                         <option value="pesoMedio">Peso Medio (kg)</option>
                         <option value="gmd">GMD Media (g/día)</option>
                     </select>
+                    <button class="btn-secondary btn-small" onclick="actualizarGraficoPesaje()"
+                        title="Actualizar gráfico">🔄 Actualizar</button>
                     <button class="btn-secondary btn-small"
                         onclick="descargarGrafico('grafico-pesaje', 'Evolucion_Peso.png')" style="margin-left: auto;">💾
                         Descargar PNG</button>
@@ -405,6 +407,8 @@
                         <option value="ingesta">Ingesta Media Diaria (kg/animal)</option>
                         <option value="ic">Índice Conversión Estimado</option>
                     </select>
+                    <button class="btn-secondary btn-small" onclick="actualizarGraficoConsumo()"
+                        title="Actualizar gráfico">🔄 Actualizar</button>
                     <button class="btn-secondary btn-small"
                         onclick="descargarGrafico('grafico-consumo', 'Consumo_Grupos.png')"
                         style="margin-left: auto;">💾 Descargar PNG</button>
@@ -693,13 +697,13 @@
     <div id="login-modal" class="modal" style="display: none;">
         <div class="modal-content modal-login">
             <span class="modal-close" onclick="closeLoginModal()">&times;</span>
-            <h3>🔐 Iniciar Sesión en Firebase</h3>
-            <p class="login-info">Inicia sesión para sincronizar datos entre dispositivos.</p>
+            <h3>🔐 Iniciar Sesión</h3>
+            <p class="login-info">Inicia sesión para sincronizar datos con la nube.</p>
             <form id="form-login"
                 onsubmit="event.preventDefault(); loginWithEmail(document.getElementById('login-email').value, document.getElementById('login-password').value);">
                 <div class="form-group">
-                    <label for="login-email">Email</label>
-                    <input type="email" id="login-email" required placeholder="tu@email.com">
+                    <label for="login-email">Usuario</label>
+                    <input type="text" id="login-email" required placeholder="Nombre de usuario">
                 </div>
                 <div class="form-group">
                     <label for="login-password">Contraseña</label>
@@ -707,7 +711,7 @@
                 </div>
                 <button type="submit" class="btn-primary" style="width: 100%;">Iniciar Sesión</button>
             </form>
-            <p class="login-note"><small>Sin cuenta: crea una en Firebase Console > Authentication</small></p>
+            <p class="login-note"><small>Nota: Se usará @corderos.tfg internamente</small></p>
         </div>
     </div>
 

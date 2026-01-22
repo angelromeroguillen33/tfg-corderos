@@ -75,11 +75,17 @@ function initFirebase() {
 // AUTENTICACIÓN
 // ==========================================
 
-// Iniciar sesión con email y contraseña
-async function loginWithEmail(email, password) {
+// Iniciar sesión con email/usuario y contraseña
+async function loginWithEmail(emailOrUsername, password) {
     if (!firebaseAuth) {
         alert('❌ Firebase no está inicializado.');
         return false;
+    }
+
+    // Si no tiene @, asumimos que es un nombre de usuario y añadimos el dominio falso
+    let email = emailOrUsername;
+    if (!email.includes('@')) {
+        email = email + '@corderos.tfg';
     }
 
     try {
@@ -93,13 +99,13 @@ async function loginWithEmail(email, password) {
         let mensaje = 'Error al iniciar sesión.';
         switch (error.code) {
             case 'auth/user-not-found':
-                mensaje = 'Usuario no encontrado. Verifica tu email.';
+                mensaje = 'Usuario no encontrado.';
                 break;
             case 'auth/wrong-password':
                 mensaje = 'Contraseña incorrecta.';
                 break;
             case 'auth/invalid-email':
-                mensaje = 'Email no válido.';
+                mensaje = 'Formato de usuario/email no válido.';
                 break;
             case 'auth/too-many-requests':
                 mensaje = 'Demasiados intentos. Espera un momento.';
@@ -150,7 +156,17 @@ function updateLoginUI(isLoggedIn, email) {
 
     if (loginBtn) loginBtn.style.display = isLoggedIn ? 'none' : 'inline-flex';
     if (logoutBtn) logoutBtn.style.display = isLoggedIn ? 'inline-flex' : 'none';
-    if (userInfo) userInfo.textContent = isLoggedIn ? email : '';
+
+    if (userInfo) {
+        // Mostrar solo la parte de usuario si es del dominio interno
+        let displayUser = email || '';
+        if (displayUser.endsWith('@corderos.tfg')) {
+            displayUser = displayUser.replace('@corderos.tfg', '');
+            // Capitalizar primera letra
+            displayUser = displayUser.charAt(0).toUpperCase() + displayUser.slice(1);
+        }
+        userInfo.textContent = isLoggedIn ? `👤 ${displayUser}` : '';
+    }
 }
 
 // Limpiar listeners de Firebase
